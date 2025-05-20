@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Let Me Pick</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f7;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: white;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background-color: #4f46e5;
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .header .step-indicator {
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 24px;
+        }
+        
+        h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+        
+        p.subtitle {
+            color: #666;
+            margin-bottom: 24px;
+        }
+        
+        .genres-container, .mediums-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .genre-btn, .medium-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #e5e7eb;
+            color: #1f2937;
+            transition: all 0.2s;
+        }
+        
+        .genre-btn.selected, .medium-btn.selected {
+            background-color: #4f46e5;
+            color: white;
+        }
+        
+        .medium-btn {
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .medium-icon {
+            font-size: 20px;
+            font-weight: bold;
+            height: 24px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .favorites-input {
+            display: flex;
+            margin-bottom: 16px;
+        }
+        
+        .favorites-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px 0 0 6px;
+            font-size: 14px;
+        }
+        
+        .favorites-input button {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 0 6px 6px 0;
+            padding: 0 12px;
+            cursor: pointer;
+        }
+        
+        .favorites-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .favorite-tag {
+            background-color: #e0e7ff;
+            color: #4338ca;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .remove-tag {
+            margin-left: 8px;
+            cursor: pointer;
+            color: #4338ca;
+            font-weight: bold;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+        }
+        
+        .back-btn {
+            color: #4f46e5;
+            background: none;
+            border: none;
+            padding: 8px 24px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .next-btn, .find-btn, .watch-btn {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 24px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .next-btn:disabled, .find-btn:disabled {
+            background-color: #a5b4fc;
+            cursor: not-allowed;
+        }
+        
+        .next-btn span, .find-btn span, .watch-btn span {
+            margin-left: 8px;
+        }
+        
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 0;
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e0e7ff;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .recommendation {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .recommendation-img {
+            position: relative;
+            height: 200px;
+            background-color: #ddd;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .recommendation-type {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: #4f46e5;
+            color: white;
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+        
+        .recommendation-content {
+            padding: 16px;
+        }
+        
+        .recommendation-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .recommendation-meta {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .recommendation-rating {
+            margin-left: 12px;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        
+        .recommendation-genres {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+        
+        .recommendation-genre {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        .recommendation-desc {
+            color: #4b5563;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        
+        .watch-platforms {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .watch-platforms h4 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .platforms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .platform {
+            background-color: #e0e7ff;
+            color: #4338ca;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .platform-icon {
+            margin-left: 4px;
+            font-size: 12px;
+        }
+        
+        .recommendation-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+        
+        .start-over-btn {
+            color: #4f46e5;
+            background: none;
+            border: 1px solid #4f46e5;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .watch-btn {
+            padding: 8px 16px;
+        }
+        
+        .step-container {
+            display: none;
+        }
+        
+        .step-container.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Let Me Pick</h1>
+            <div class="step-indicator" id="stepIndicator"></div>
+        </div>
+        
+        <div class="step-container active" id="step1">
+            <div class="content">
+                <h2>Select your favorite genres</h2>
+                <p class="subtitle">Choose the genres you enjoy watching the most.</p>
+                
+                <div class="genres-container" id="genresContainer">
+                    <!-- Genres will be added here via JavaScript -->
+                </div>
+                
+                <div class="navigation">
+                    <div></div>
+                    <button id="toStep2Btn" class="next-btn" disabled>
+                        Next <span>→</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="step-container" id="step2">
+            <div class="content">
+                <h2>Add your favorite shows and movies</h2>
+                <p class="subtitle">Enter titles of shows and movies you've enjoyed in the past.</p>
+                
+                <div class="favorites-input">
+                    <input type="text" id="favoriteInput" placeholder="Enter a show or movie title">
+                    <button id="addFavoriteBtn">+</button>
+                </div>
+                
+                <div class="favorites-tags" id="favoritesContainer">
+                    <!-- Favorites will be added here via JavaScript -->
+                </div>
+                
+                <div class="navigation">
+                    <button id="backToStep1Btn" class="back-btn">Back</button>
+                    <button id="toStep3Btn" class="next-btn" disabled>
+                        Next <span>→</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="step-container" id="step3">
+            <div class="content">
+                <h2>What type of content do you prefer?</h2>
+                <p class="subtitle">Select all that apply.</p>
+                
+                <div class="mediums-container" id="mediumsContainer">
+                    <!-- Mediums will be added here via JavaScript -->
+                </div>
+                
+                <div class="navigation">
+                    <button id="backToStep2Btn" class="back-btn">Back</button>
+                    <button id="findBtn" class="find-btn" disabled>
+                        Find me something to watch <span>🔍</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="step-container" id="step4">
+            <div class="content">
+                <h2>Your Pick</h2>
+                <p class="subtitle">Based on your preferences, we think you'll enjoy this:</p>
+                
+                <div id="loadingContainer" class="loading">
+                    <div class="spinner"></div>
+                    <p>Finding the perfect match for you...</p>
+                </div>
+                
+                <div id="recommendationContainer" style="display: none;">
+                    <!-- Recommendation will be added here via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data and state
+        const genreOptions = ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Horror', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller'];
+        const mediumOptions = ['TV Show', 'Movie', 'Anime', 'Live Action'];
+        
+        const recommendations = [
+            {
+                title: "Stranger Things",
+                type: "TV Show",
+                genres: ["Sci-Fi", "Horror", "Drama"],
+                platforms: ["Netflix"],
+                rating: "8.7/10",
+                year: "2016-present",
+                description: "When a young boy disappears, his mother, a police chief and his friends must confront terrifying supernatural forces in order to get him back."
+            },
+            {
+                title: "Your Name",
+                type: "Anime Movie",
+                genres: ["Romance", "Fantasy", "Drama"],
+                platforms: ["Crunchyroll", "Amazon Prime"],
+                rating: "8.4/10",
+                year: "2016",
+                description: "Two strangers find themselves linked in a bizarre way. When a connection forms, will distance be the only thing to keep them apart?"
+            },
+            {
+                title: "Breaking Bad",
+                type: "TV Show",
+                genres: ["Crime", "Drama", "Thriller"],
+                platforms: ["Netflix", "Amazon Prime"],
+                rating: "9.5/10",
+                year: "2008-2013",
+                description: "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family's future."
+            }
+        ];
+        
+        let currentStep = 1;
+        const preferences = {
+            genres: [],
+            favorites: [],
+            mediums: []
+        };
+        
+        // DOM Elements
+        const stepIndicator = document.getElementById('stepIndicator');
+        const genresContainer = document.getElementById('genresContainer');
+        const favoritesContainer = document.getElementById('favoritesContainer');
+        const mediumsContainer = document.getElementById('mediumsContainer');
+        const favoriteInput = document.getElementById('favoriteInput');
+        const addFavoriteBtn = document.getElementById('addFavoriteBtn');
+        const toStep2Btn = document.getElementById('toStep2Btn');
+        const backToStep1Btn = document.getElementById('backToStep1Btn');
+        const toStep3Btn = document.getElementById('toStep3Btn');
+        const backToStep2Btn = document.getElementById('backToStep2Btn');
+        const findBtn = document.getElementById('findBtn');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const recommendationContainer = document.getElementById('recommendationContainer');
+        
+        // Initialize the app
+        function init() {
+            renderGenres();
+            renderMediums();
+            updateStepIndicator();
+            setupEventListeners();
+        }
+        
+        // Render genres
+        function renderGenres() {
+            genresContainer.innerHTML = '';
+            genreOptions.forEach(genre => {
+                const genreBtn = document.createElement('button');
+                genreBtn.className = `genre-btn ${preferences.genres.includes(genre) ? 'selected' : ''}`;
+                genreBtn.textContent = genre;
+                genreBtn.addEventListener('click', () => toggleGenre(genre));
+                genresContainer.appendChild(genreBtn);
+            });
+        }
+        
+        // Toggle genre selection
+        function toggleGenre(genre) {
+            if (preferences.genres.includes(genre)) {
+                preferences.genres = preferences.genres.filter(g => g !== genre);
+            } else {
+                preferences.genres.push(genre);
+            }
+            renderGenres();
+            updateNextButtonState();
+        }
+        
+        // Render mediums
+        function renderMediums() {
+            mediumsContainer.innerHTML = '';
+            mediumOptions.forEach(medium => {
+                const mediumBtn = document.createElement('button');
+                mediumBtn.className = `medium-btn ${preferences.mediums.includes(medium) ? 'selected' : ''}`;
+                
+                const iconElement = document.createElement('div');
+                iconElement.className = 'medium-icon';
+                
+                if (medium === 'TV Show') {
+                    iconElement.textContent = '📺';
+                } else if (medium === 'Movie') {
+                    iconElement.textContent = '🎬';
+                } else if (medium === 'Anime') {
+                    iconElement.textContent = 'A';
+                } else if (medium === 'Live Action') {
+                    iconElement.textContent = 'L';
+                }
+                
+                mediumBtn.appendChild(iconElement);
+                mediumBtn.appendChild(document.createTextNode(medium));
+                
+                mediumBtn.addEventListener('click', () => toggleMedium(medium));
+                mediumsContainer.appendChild(mediumBtn);
+            });
+        }
+        
+        // Toggle medium selection
+        function toggleMedium(medium) {
+            if (preferences.mediums.includes(medium)) {
+                preferences.mediums = preferences.mediums.filter(m => m !== medium);
+            } else {
+                preferences.mediums.push(medium);
+            }
+            renderMediums();
+            updateFindButtonState();
+        }
+        
+        // Add favorite
+        function addFavorite() {
+            const value = favoriteInput.value.trim();
+            if (!value) return;
+            
+            if (!preferences.favorites.includes(value)) {
+                preferences.favorites.push(value);
+                renderFavorites();
+                favoriteInput.value = '';
+                updateToStep3ButtonState();
+            }
+        }
+        
+        // Render favorites
+        function renderFavorites() {
+            favoritesContainer.innerHTML = '';
+            preferences.favorites.forEach((favorite, index) => {
+                const tag = document.createElement('div');
+                tag.className = 'favorite-tag';
+                tag.innerHTML = `${favorite} <span class="remove-tag" data-index="${index}">×</span>`;
+                favoritesContainer.appendChild(tag);
+            });
+            
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-tag').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    preferences.favorites.splice(index, 1);
+                    renderFavorites();
+                    updateToStep3ButtonState();
+                });
+            });
+        }
+        
+        // Update button states
+        function updateNextButtonState() {
+            toStep2Btn.disabled = preferences.genres.length === 0;
+        }
+        
+        function updateToStep3ButtonState() {
+            toStep3Btn.disabled = preferences.favorites.length === 0;
+        }
+        
+        function updateFindButtonState() {
+            findBtn.disabled = preferences.mediums.length === 0;
+        }
+        
+        // Navigation functions
+        function goToStep(step) {
+            document.querySelectorAll('.step-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            document.getElementById(`step${step}`).classList.add('active');
+            currentStep = step;
+            updateStepIndicator();
+        }
+        
+        function updateStepIndicator() {
+            if (currentStep >= 1 && currentStep <= 3) {
+                stepIndicator.textContent = `Step ${currentStep} of 3`;
+            } else {
+                stepIndicator.textContent = '';
+            }
+        }
+        
+        // Generate recommendation
+        function findRecommendation() {
+            goToStep(4);
+            loadingContainer.style.display = 'flex';
+            recommendationContainer.style.display = 'none';
+            
+            // Simulate API call with timeout
+            setTimeout(() => {
+                loadingContainer.style.display = 'none';
+                recommendationContainer.style.display = 'block';
+                
+                // Get random recommendation
+                const randomIndex = Math.floor(Math.random() * recommendations.length);
+                const recommendation = recommendations[randomIndex];
+                
+                renderRecommendation(recommendation);
+            }, 2000);
+        }
+        
+        // Render recommendation
+        function renderRecommendation(recommendation) {
+            const html = `
+                <div class="recommendation">
+                    <div class="recommendation-img">
+                        [Movie/Show Poster Image]
+                        <div class="recommendation-type">${recommendation.type}</div>
+                    </div>
+                    <div class="recommendation-content">
+                        <h3 class="recommendation-title">${recommendation.title}</h3>
+                        <div class="recommendation-meta">
+                            <span>${recommendation.year}</span>
+                            <span class="recommendation-rating">${recommendation.rating}</span>
+                        </div>
+                        
+                        <div class="recommendation-genres">
+                            ${recommendation.genres.map(genre => `<span class="recommendation-genre">${genre}</span>`).join('')}
+                        </div>
+                        
+                        <p class="recommendation-desc">${recommendation.description}</p>
+                        
+                        <div class="watch-platforms">
+                            <h4>Watch on:</h4>
+                            <div class="platforms">
+                                ${recommendation.platforms.map(platform => 
+                                    `<a href="#" class="platform">${platform} <span class="platform-icon">↗</span></a>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="recommendation-actions">
+                            <button id="startOverBtn" class="start-over-btn">Start Over</button>
+                            <button class="watch-btn">Watch Now <span>▶</span></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            recommendationContainer.innerHTML = html;
+            
+            // Add event listener to Start Over button
+            document.getElementById('startOverBtn').addEventListener('click', resetApp);
+        }
+        
+        // Reset app
+        function resetApp() {
+            preferences.genres = [];
+            preferences.favorites = [];
+            preferences.mediums = [];
+            
+            renderGenres();
+            renderFavorites();
+            renderMediums();
+            
+            updateNextButtonState();
+            updateToStep3ButtonState();
+            updateFindButtonState();
+            
+            goToStep(1);
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Add favorite when Enter key is pressed in input
+            favoriteInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addFavorite();
+                }
+            });
+            
+            // Button click event listeners
+            addFavoriteBtn.addEventListener('click', addFavorite);
+            toStep2Btn.addEventListener('click', () => goToStep(2));
+            backToStep1Btn.addEventListener('click', () => goToStep(1));
+            toStep3Btn.addEventListener('click', () => goToStep(3));
+            backToStep2Btn.addEventListener('click', () => goToStep(2));
+            findBtn.addEventListener('click', findRecommendation);
+        }
+        
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
